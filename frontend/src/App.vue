@@ -16,6 +16,8 @@ import HelloWorld from "@/components/HelloWorld.vue";
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
 
+      <Button label="Click me" />
+
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>

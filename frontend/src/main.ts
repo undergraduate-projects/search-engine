@@ -1,13 +1,13 @@
-import { createApp } from "vue";
-import { createPinia } from "pinia";
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 
-import App from "./App.vue";
-import router from "./router";
+import App from './App.vue';
+import router from './router';
 
-import PrimeVue from "primevue/config";
-import "primevue/resources/themes/lara-light-indigo/theme.css"; //theme
-import "primevue/resources/primevue.min.css"; //core css
-import "primeicons/primeicons.css"; //icons
+import PrimeVue from 'primevue/config';
+import 'primevue/resources/themes/lara-light-indigo/theme.css'; //theme
+import 'primevue/resources/primevue.min.css'; //core css
+import 'primeicons/primeicons.css'; //icons
 
 const app = createApp(App);
 
@@ -15,7 +15,7 @@ app.use(createPinia());
 app.use(router);
 
 app.use(PrimeVue);
-import Button from "primevue/button";
+import Button from 'primevue/button';
 app.component(Button.name, Button);
 
-app.mount("#app");
+app.mount('#app');

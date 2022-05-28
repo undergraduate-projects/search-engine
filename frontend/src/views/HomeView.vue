@@ -66,7 +66,7 @@ import SearchBar from '@/components/SearchBar.vue';
   background-image: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
 }
 .content {
-  margin: 5rem auto;
+  margin: 7rem auto;
   padding: 2rem;
   padding-bottom: 2.5rem;
   width: fit-content;
@@ -108,7 +108,7 @@ import SearchBar from '@/components/SearchBar.vue';
 .foot {
   width: fit-content;
   margin: auto;
-  margin-top: 5rem;
+  margin-top: 1.5rem;
   text-align: center;
   color: #aeb1b6;
 }

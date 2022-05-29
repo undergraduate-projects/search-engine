@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
+import InputText from 'primevue/inputtext';
+import Card from 'primevue/card';
+import Tree from 'primevue/tree';
 import type {
   TreeNode,
   TreeExpandedKeys,

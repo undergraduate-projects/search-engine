@@ -18,7 +18,11 @@ app.use(router);
 app.use(PrimeVue);
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
+import Card from 'primevue/card';
+import Tree from 'primevue/tree';
 app.component(Button.name, Button);
 app.component(InputText.name, InputText);
+app.component(Card.name, Card);
+app.component(Tree.name, Tree);
 
 app.mount('#app');

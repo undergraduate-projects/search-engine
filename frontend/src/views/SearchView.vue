@@ -1,3 +1,9 @@
 <template>
-  <div>search view</div>
+  <div>search view: {{ route.params.query }}</div>
 </template>
+
+<script setup lang="ts">
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+</script>

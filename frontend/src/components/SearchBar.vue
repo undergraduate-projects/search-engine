@@ -14,6 +14,7 @@ const searchValue = ref('');
 
 const handleSubmit = (e: Event) => {
   e.preventDefault();
+  if (!searchValue.value) return;
   router.push({
     name: 'search',
     params: {

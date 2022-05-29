@@ -16,9 +16,5 @@ app.use(createPinia());
 app.use(router);
 
 app.use(PrimeVue);
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-app.component(Button.name, Button);
-app.component(InputText.name, InputText);
 
 app.mount('#app');

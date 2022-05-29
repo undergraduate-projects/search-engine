@@ -8,6 +8,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
 
 const router = useRouter();
 const searchValue = ref('');

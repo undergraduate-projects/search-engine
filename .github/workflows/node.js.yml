@@ -17,7 +17,7 @@ jobs:
     - name: ssh
       uses: garygrossgarten/github-action-ssh@release
       with:
-        command: cd /home/ubuntu/search/deploy ; bash deploy.sh
+        command: . ~/.nvm/nvm.sh ; cd /home/ubuntu/search/deploy ; bash deploy.sh
         host: ${{ secrets.HOST }}
         port: 2222
         username: ubuntu

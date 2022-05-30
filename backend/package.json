@@ -8,7 +8,13 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
+    "postbuild": "npm run cpfront",
+    "cpfront": "rm -rf dist/frontend && mkdir -p dist && cp -r ../frontend/dist ./dist/ && mv dist/dist dist/frontend",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "prestart": "npm run cpfront",
+    "prestart:dev": "npm run cpfront",
+    "prestart:debug": "npm run cpfront",
+    "prestart:prod": "npm run cpfront",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -24,6 +30,7 @@
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/serve-static": "^2.2.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0"

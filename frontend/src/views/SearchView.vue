@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRoute, RouterLink } from 'vue-router';
-import InputText from 'primevue/inputtext';
+import { RouterLink } from 'vue-router';
 import Card from 'primevue/card';
 import Tree from 'primevue/tree';
 import type {
@@ -9,9 +8,8 @@ import type {
   TreeExpandedKeys,
   TreeSelectionKeys,
 } from 'primevue/tree';
+import HeaderBar from '../components/HeaderBar.vue';
 
-const route = useRoute();
-const searchValue = ref(route.params.query as string);
 const items = ref<TreeNode[]>([
   {
     key: '0',
@@ -55,21 +53,7 @@ const selectedKeys = ref<TreeSelectionKeys>(
 
 <template>
   <div class="main flex flex-column">
-    <div class="header m-2 flex align-items-center">
-      <RouterLink :to="{ name: 'home' }" class="logo flex align-items-center">
-        <img class="image" src="@/assets/justice.png" />
-        <div class="text">
-          Case<br />
-          Lookup
-        </div>
-      </RouterLink>
-      <div>
-        <span class="p-input-icon-left">
-          <i class="pi pi-search" />
-          <InputText type="text" v-model="searchValue" placeholder="Search" />
-        </span>
-      </div>
-    </div>
+    <HeaderBar />
     <div class="flex">
       <Tree
         class="sidebar ml-4 mr-3 mt-3 flex-shrink-0"
@@ -80,15 +64,17 @@ const selectedKeys = ref<TreeSelectionKeys>(
       />
 
       <div class="results flex-grow-1">
-        <Card class="result m-3" v-for="n in 10" :key="n">
-          <template #title> Result Title </template>
-          <template #content>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore
-            sed consequuntur error repudiandae numquam deserunt quisquam
-            repellat libero asperiores earum nam nobis, culpa ratione quam
-            perferendis esse, cupiditate neque quas!
-          </template>
-        </Card>
+        <RouterLink :to="{ name: 'case' }" class="m-3" v-for="n in 10" :key="n">
+          <Card class="result">
+            <template #title> Result Title </template>
+            <template #content>
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+              Inventore sed consequuntur error repudiandae numquam deserunt
+              quisquam repellat libero asperiores earum nam nobis, culpa ratione
+              quam perferendis esse, cupiditate neque quas!
+            </template>
+          </Card>
+        </RouterLink>
       </div>
     </div>
   </div>
@@ -98,26 +84,12 @@ const selectedKeys = ref<TreeSelectionKeys>(
 .main {
   background-color: #f7f7f7;
 }
-.logo {
-  .image {
-    height: 5rem;
-    margin-right: 0.2rem;
-  }
-  .text {
-    font-size: 1.2rem;
-    font-weight: 700;
-    font-family: Verdana;
-    color: #4e4f52;
-  }
-  margin-left: 1.1rem;
-  margin-right: 3rem;
-}
 
-.logo:link {
+a:link {
   text-decoration: none;
 }
 
-.p-inputtext {
+:deep(.searchbar) {
   width: 65vh;
 }
 
@@ -167,8 +139,6 @@ const selectedKeys = ref<TreeSelectionKeys>(
 
 .result {
   max-width: 900px;
-}
-.p-card {
   border-radius: 10px;
   background: #f7f7f7;
   box-shadow: 5px 5px 10px #ebebeb, -5px -5px 10px #ffffff;

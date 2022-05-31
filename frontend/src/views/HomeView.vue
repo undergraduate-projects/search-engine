@@ -11,7 +11,7 @@ import WaveLayout from '../components/WaveLayout.vue';
           <img class="image" src="@/assets/justice.png" />
           <div class="text">Case Lookup</div>
         </div>
-        <SearchBar />
+        <SearchBar :with-button="true" />
       </div>
     </div>
 
@@ -50,6 +50,10 @@ import WaveLayout from '../components/WaveLayout.vue';
     font-family: Verdana;
     color: #494a4c;
   }
+}
+
+:deep(.searchbar) {
+  width: 65vh;
 }
 
 .foot {

@@ -40,20 +40,24 @@ def search_basic(request):
                             "全文*": {},
                             "法条": {}
                         }
-                    })
+                    },
+                    from_=request.GET["offset"])
     data = []
     for hit in resp['hits']['hits']:
         source = hit['_source']
         highlight = hit['highlight']
         for (key, val) in highlight.items():
             update_key(key.split('.'), val[0], source)
-        data.append(source)
+        data.append({
+            'source': source,
+            'highlight': highlight
+        })
     print(len(data))
     # res = [case['_source'] for case in case_list]
     return JsonResponse(data={
         'total': resp['hits']['total']['value'],
         'size': 10,
-        'offset': 0,
+        'offset': request.GET["offset"],
         'data': data
     }, json_dumps_params={'ensure_ascii':False})
     

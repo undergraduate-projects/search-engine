@@ -1,5 +1,22 @@
 <script setup lang="ts">
+import { api } from '@/router/axios';
+import { onMounted } from 'vue';
 import HeaderBar from '../components/HeaderBar.vue';
+import Toast from 'primevue/toast';
+import { useToast } from 'primevue/usetoast';
+
+const toast = useToast();
+onMounted(() => {
+  api.get('').then((res) => {
+    console.log(res);
+    toast.add({
+      severity: 'info',
+      summary: 'Info Message',
+      detail: res.data,
+      life: 3000,
+    });
+  });
+});
 
 const casea: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,6 +73,7 @@ const casea: {
 
 <template>
   <div class="main flex flex-column">
+    <Toast />
     <HeaderBar />
     <div class="body">
       <div class="content">

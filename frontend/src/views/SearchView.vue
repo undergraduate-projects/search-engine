@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import Card from 'primevue/card';
 import Tree from 'primevue/tree';
@@ -8,7 +8,36 @@ import type {
   TreeExpandedKeys,
   TreeSelectionKeys,
 } from 'primevue/tree';
+import Toast from 'primevue/toast';
+import { useToast } from 'primevue/usetoast';
 import HeaderBar from '../components/HeaderBar.vue';
+import { api } from '@/router/axios';
+import { useSearchStore } from '@/stores/search';
+
+const toast = useToast();
+
+const search = useSearchStore();
+onMounted(() => {
+  api
+    .get('search', {
+      params: {
+        query: search.query,
+        offset: 0,
+      },
+    })
+    .then(({ data }) => {
+      search.setResult(data);
+    })
+    .catch((error) => {
+      console.error(error);
+      toast.add({
+        severity: 'error',
+        summary: 'Request failed',
+        detail: error.message,
+        life: 3000,
+      });
+    });
+});
 
 const items = ref<TreeNode[]>([
   {
@@ -53,6 +82,7 @@ const selectedKeys = ref<TreeSelectionKeys>(
 
 <template>
   <div class="main flex flex-column">
+    <Toast />
     <HeaderBar />
     <div class="flex">
       <Tree

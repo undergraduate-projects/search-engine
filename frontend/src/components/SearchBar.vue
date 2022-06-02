@@ -1,6 +1,6 @@
 <template>
   <form v-if="withButton" @submit="handleSubmit">
-    <InputText type="text" v-model="search.value" class="searchbar mr-2" />
+    <InputText type="text" v-model="searchQuery" class="searchbar mr-2" />
     <Button icon="pi pi-search" type="submit" />
   </form>
   <form v-else>
@@ -8,7 +8,7 @@
       <i class="pi pi-search" />
       <InputText
         type="text"
-        v-model="search.value"
+        v-model="searchQuery"
         class="searchbar"
         placeholder="Search"
       />
@@ -21,6 +21,7 @@ import { useRouter } from 'vue-router';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import { useSearchStore } from '@/stores/search';
+import { ref } from 'vue';
 
 defineProps<{
   withButton: boolean;
@@ -28,15 +29,15 @@ defineProps<{
 
 const router = useRouter();
 const search = useSearchStore();
+const searchQuery = ref('');
 
 const handleSubmit = (e: Event) => {
   e.preventDefault();
-  if (!search.value) return;
+  if (!search.query) return;
+  search.query = searchQuery.value;
+  search.setResult();
   router.push({
     name: 'search',
-    params: {
-      query: search.value,
-    },
   });
 };
 </script>

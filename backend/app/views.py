@@ -49,6 +49,7 @@ def search_basic(request):
         for (key, val) in highlight.items():
             update_key(key.split('.'), val[0], source)
         data.append({
+            'id': hit['_id'],
             'source': source,
             'highlight': highlight
         })

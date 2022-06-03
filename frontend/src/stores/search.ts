@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 type SearchResponseItem = {
+  id: string;
   source: {
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   };
   highlight: {
     [key: string]: string[];
@@ -16,34 +18,19 @@ type SearchResponse = {
   data: SearchResponseItem[];
 };
 
-type SearchResponseItemIndexed = SearchResponseItem & {
-  id: number;
-};
-type SearchResponseIndexed = SearchResponse & {
-  data: SearchResponseItemIndexed[];
-};
-
 export const useSearchStore = defineStore('search', () => {
   const query = ref('');
 
-  const rawResultEmpty = {
+  const resultEmpty = {
     total: 0,
     size: 0,
     offset: '',
     data: [],
   };
-  const rawResult = ref<SearchResponse>(rawResultEmpty);
-  const setResult = (result?: SearchResponse) => {
-    if (result) rawResult.value = result;
-    else rawResult.value = rawResultEmpty;
+  const result = ref<SearchResponse>(resultEmpty);
+  const resetResult = () => {
+    result.value = resultEmpty;
   };
-  const result = computed<SearchResponseIndexed>(() => ({
-    ...rawResult.value,
-    data: rawResult.value.data.map((item, index) => ({
-      ...item,
-      id: index,
-    })),
-  }));
 
-  return { query, setResult, result };
+  return { query, resetResult, result };
 });

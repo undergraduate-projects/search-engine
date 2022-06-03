@@ -12,16 +12,20 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/search',
+      path: '/search/:query',
       name: 'search',
       component: SearchView,
     },
     {
-      path: '/case',
+      path: '/case/:id',
       name: 'case',
       component: CaseView,
     },
   ],
+  scrollBehavior() {
+    // always scroll to top
+    return { top: 0 };
+  },
 });
 
 export default router;

@@ -144,9 +144,9 @@ def knn_search(query_vector, k=20, num_candidates=100):
 def search_recommend(request):
     if request.method != "GET":
         return HttpResponse("Only GET method is supported.")
-    query_vector = request.GET.get("query_vector", "")
+    query_vector = request.GET.get("query_vector", np.zeros(100))
     AY = request.GET.get("AY", "")
-    JBFY = request.GE.get("JBFY", "")
+    JBFY = request.GET.get("JBFY", "")
     FGCY = request.GET.get("FGCY", [])
     knn_data = knn_search(query_vector)
     AY_data = AY_search(AY)

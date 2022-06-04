@@ -37,7 +37,7 @@ def search_basic(request):
     resp = es.search(index=INDEX, 
                     query={
                         "query_string": {
-                            "query": request.GET["query"],
+                            "query": request.GET.get("query", "no"),
                     }},
                     fields=["自定义*", "全文*", "法条", "案例属性*"],
                     highlight={
@@ -55,13 +55,13 @@ def search_basic(request):
         highlight = hit['highlight']
         for (key, val) in highlight.items():
             update_key(key.split('.'), val[0], source)
-        # val_set = set()
-        # unique_highlight = dict()
-        # for (key, val) in highlight.items():
-        #     v = val[0] if len(val) == 1 else ''.join(val)
-        #     if v not in val_set:
-        #         val_set.add(v)
-        #         unique_highlight[key] = val
+        val_set = set()
+        unique_highlight = dict()
+        for (key, val) in highlight.items():
+            v = val[0] if len(val) == 1 else ''.join(val)
+            if v not in val_set:
+                val_set.add(v)
+                unique_highlight[key] = val
         data.append({
             'id': hit['_id'],
             'source': source,
@@ -144,10 +144,10 @@ def knn_search(query_vector, k=20, num_candidates=100):
 def search_recommend(request):
     if request.method != "GET":
         return HttpResponse("Only GET method is supported.")
-    query_vector = request.GET["query_vector"]
-    AY = request.GET["AY"]
-    JBFY = request.GET["JBFY"]
-    FGCY = request.GET["FGCY"]
+    query_vector = request.GET.get("query_vector", "")
+    AY = request.GET.get("AY", "")
+    JBFY = request.GE.get("JBFY", "")
+    FGCY = request.GET.get("FGCY", [])
     knn_data = knn_search(query_vector)
     AY_data = AY_search(AY)
     JBFY_data = JBFY_search(JBFY)
@@ -190,3 +190,16 @@ def search_by_case(request):
         'offset': 0,
         'data': data
     }, json_dumps_params={'ensure_ascii':False})
+
+
+def search_by_id(request):
+    if request.method != "GET":
+        return HttpResponse("Only GET method is supported.")
+    try:
+        resp = es.get(index="case-data", id=request.GET.get("id", 0))
+        return JsonResponse(data={
+                'data': resp['_source']
+            }, json_dumps_params={'ensure_ascii':False})
+    except:
+        return HttpResponse("No such id.")
+    

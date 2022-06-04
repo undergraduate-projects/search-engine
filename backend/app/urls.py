@@ -7,4 +7,5 @@ urlpatterns = [
     path('search', views.search_basic, name='search_basic'),
     path('recommend', views.search_recommend, name='search_recommend'),
     path('search-by-case', views.search_by_case, name='search_by_case'),
+    path('search-by-id', views.search_by_id, name='search_by_id'),
 ]

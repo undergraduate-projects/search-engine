@@ -12,7 +12,7 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/search/:query',
+      path: '/search',
       name: 'search',
       component: SearchView,
     },

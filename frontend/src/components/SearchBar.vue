@@ -1,26 +1,60 @@
 <template>
   <form v-if="withButton" @submit="handleSubmit">
-    <InputText type="text" v-model="searchQuery" class="searchbar mr-2" />
+    <span class="p-input-icon-right mr-2">
+      <InputText
+        ref="inputtext"
+        type="text"
+        v-model="searchQuery"
+        class="searchbar"
+      />
+      <i
+        class="pi pi-folder"
+        v-tooltip.bottom="'上传案例文件'"
+        @click="openFileUpload"
+      />
+    </span>
+
     <Button icon="pi pi-search" type="submit" />
   </form>
   <form v-else @submit="handleSubmit">
-    <span class="p-input-icon-left">
+    <span class="p-input-icon-left p-input-icon-right">
       <i class="pi pi-search" />
       <InputText
+        ref="inputtext"
         type="text"
         v-model="searchQuery"
         class="searchbar"
         placeholder="Search"
       />
+      <i
+        class="pi pi-folder"
+        v-tooltip.bottom="'上传案例文件'"
+        @click="openFileUpload"
+      />
     </span>
   </form>
+  <OverlayPanel ref="fileUpload" :showCloseIcon="true">
+    <FileUpload
+      :custom-upload="true"
+      @uploader="fileUploader"
+      :file-limit="1"
+      accept=".xml"
+    >
+      <template #empty>
+        <p>Drag and drop files to here to upload.</p>
+      </template>
+    </FileUpload>
+  </OverlayPanel>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
-import { useSearchStore } from '@/stores/search';
+import OverlayPanel from 'primevue/overlaypanel';
+import FileUpload from 'primevue/fileupload';
+import type { FileUploadUploaderEvent } from 'primevue/fileupload';
+import { useSearchStore, QueryType } from '@/stores/search';
 import { ref } from 'vue';
 
 defineProps<{
@@ -29,7 +63,8 @@ defineProps<{
 
 const router = useRouter();
 const search = useSearchStore();
-const searchQuery = ref(search.query);
+const searchQuery = ref(search.query.value);
+const fileUpload = ref();
 
 const emit = defineEmits<{
   (e: 'submit'): void;
@@ -38,14 +73,43 @@ const emit = defineEmits<{
 const handleSubmit = (e: Event) => {
   e.preventDefault();
   if (!searchQuery.value) return;
-  search.query = searchQuery.value;
+  search.query = {
+    type: QueryType.Keyword,
+    value: searchQuery.value,
+  };
   search.resetResult();
   router.push({
     name: 'search',
-    params: {
-      query: searchQuery.value,
-    },
   });
   emit('submit');
 };
+
+const inputtext = ref();
+const openFileUpload = (event: Event) => {
+  let newEvent = Object.assign(event);
+  // newEvent.target = inputtext.value;
+  fileUpload.value.toggle(newEvent);
+};
+
+const fileUploader = (event: FileUploadUploaderEvent) => {
+  let fileReader = new FileReader();
+  fileReader.onload = () => {
+    search.query = {
+      type: QueryType.File,
+      value: fileReader.result as string,
+    };
+    search.resetResult();
+    router.push({
+      name: 'search',
+    });
+    emit('submit');
+  };
+  fileReader.readAsText((event.files as File[])[0]);
+};
 </script>
+
+<style scoped lang="scss">
+.pi-folder {
+  cursor: pointer;
+}
+</style>

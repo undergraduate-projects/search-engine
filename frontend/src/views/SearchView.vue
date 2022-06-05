@@ -15,7 +15,8 @@ import type { PageState } from 'primevue/paginator';
 import ProgressSpinner from 'primevue/progressspinner';
 import HeaderBar from '../components/HeaderBar.vue';
 import { api } from '@/router/axios';
-import { useSearchStore } from '@/stores/search';
+import { QueryType, useSearchStore } from '@/stores/search';
+import type { AxiosRequestConfig } from 'axios';
 
 const toast = useToast();
 
@@ -23,13 +24,25 @@ const loading = ref(false);
 const search = useSearchStore();
 const request = (offset?: number) => {
   loading.value = true;
-  api
-    .get('search', {
-      params: {
-        query: search.query,
-        offset: offset != undefined ? offset : search.result.offset,
-      },
-    })
+  const apiParams: AxiosRequestConfig =
+    search.query.type == QueryType.Keyword
+      ? {
+          url: 'search',
+          method: 'get',
+          params: {
+            query: search.query.value,
+            offset: offset != undefined ? offset : search.result.offset,
+          },
+        }
+      : {
+          url: 'search-by-case',
+          method: 'post',
+          data: {
+            xml_str: search.query.value,
+            offset: offset != undefined ? offset : search.result.offset,
+          },
+        };
+  api(apiParams)
     .then(({ data }) => {
       search.result = data;
     })
@@ -47,7 +60,7 @@ const request = (offset?: number) => {
     });
 };
 onMounted(() => request());
-onBeforeRouteUpdate(() => request(0));
+// onBeforeRouteUpdate(() => request(0));
 const onSubmit = () => request(0);
 const onPage = (event: PageState) => {
   console.log(event);
@@ -138,6 +151,9 @@ const selectedKeys = ref<TreeSelectionKeys>(
                       <div v-html="v" class="field" />
                     </template>
                   </template>
+                  <div v-if="item.highlight == undefined">
+                    {{ item.source['全文']['诉讼记录'] }}
+                  </div>
                   <div class="property">
                     <template
                       v-for="field in ['案件类别', '案由']"
@@ -158,7 +174,7 @@ const selectedKeys = ref<TreeSelectionKeys>(
           :rows="10"
           :totalRecords="search.result.total"
           @page="onPage"
-          :first="parseInt(search.result.offset) * 10"
+          :first="search.result.offset * 10"
         ></Paginator>
       </div>
     </div>
@@ -241,6 +257,10 @@ a:link {
 
   :deep(.p-card-content) {
     padding: 0.5rem 0 0 0;
+  }
+
+  :deep(.p-card-title) {
+    font-size: 1.35rem;
   }
 }
 

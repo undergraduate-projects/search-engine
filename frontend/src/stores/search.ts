@@ -7,24 +7,32 @@ type SearchResponseItem = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   };
-  highlight: {
+  highlight?: {
     [key: string]: string[];
   };
 };
 type SearchResponse = {
   total: number;
   size: number;
-  offset: string;
+  offset: number;
   data: SearchResponseItem[];
 };
 
+export enum QueryType {
+  Keyword,
+  File,
+}
+
 export const useSearchStore = defineStore('search', () => {
-  const query = ref('');
+  const query = ref({
+    type: QueryType.Keyword,
+    value: '',
+  });
 
   const resultEmpty = {
     total: 0,
     size: 0,
-    offset: '',
+    offset: 0,
     data: [],
   };
   const result = ref<SearchResponse>(resultEmpty);

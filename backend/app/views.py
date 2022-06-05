@@ -166,8 +166,8 @@ def search_recommend(request):
 
 
 def search_by_case(request):
-    if request.method != "GET":
-        return HttpResponse("Only GET method is supported.")
+    if request.method != "POST":
+        return HttpResponse("Only POST method is supported.")
     # print(request.body)
     body = json.loads(request.body)
     xml_str = body["xml_str"]
@@ -183,11 +183,17 @@ def search_by_case(request):
         except:
             continue
     query_vector /= len(text)
-    data = knn_search(query_vector, k=50, num_candidates=200)
+    hits = knn_search(query_vector, k=100, num_candidates=200)
+    offset = body.get("offset", 0)
+    size = body.get("size", 10)
+    data = [{
+        'id': hit['_id'],
+        'source': hit['_source'],
+    } for hit in hits[offset*size:(offset+1)*size]]
     return JsonResponse(data={
-        'total': len(data),
+        'total': len(hits),
         'size': 10,
-        'offset': 0,
+        'offset': offset,
         'data': data
     }, json_dumps_params={'ensure_ascii':False})
 

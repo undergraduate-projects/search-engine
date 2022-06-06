@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { onBeforeRouteUpdate, RouterLink } from 'vue-router';
+import { RouterLink } from 'vue-router';
 import Card from 'primevue/card';
 import Tree from 'primevue/tree';
 import type {
@@ -15,7 +15,7 @@ import type { PageState } from 'primevue/paginator';
 import ProgressSpinner from 'primevue/progressspinner';
 import HeaderBar from '../components/HeaderBar.vue';
 import { api } from '@/router/axios';
-import { QueryType, useSearchStore } from '@/stores/search';
+import { useSearchStore } from '@/stores/search';
 import type { AxiosRequestConfig } from 'axios';
 
 const toast = useToast();
@@ -24,24 +24,28 @@ const loading = ref(false);
 const search = useSearchStore();
 const request = (offset?: number) => {
   loading.value = true;
-  const apiParams: AxiosRequestConfig =
-    search.query.type == QueryType.Keyword
-      ? {
+  const apiParams: AxiosRequestConfig = (() => {
+    switch (search.query.type) {
+      case 'keyword':
+        return {
           url: 'search',
           method: 'get',
           params: {
-            query: search.query.value,
-            offset: offset != undefined ? offset : search.result.offset,
-          },
-        }
-      : {
-          url: 'search-by-case',
-          method: 'post',
-          data: {
-            xml_str: search.query.value,
+            query: search.query.keyword,
             offset: offset != undefined ? offset : search.result.offset,
           },
         };
+      case 'file':
+        return {
+          url: 'search-by-case',
+          method: 'post',
+          data: {
+            xml_str: search.query.content,
+            offset: offset != undefined ? offset : search.result.offset,
+          },
+        };
+    }
+  })();
   api(apiParams)
     .then(({ data }) => {
       search.result = data;

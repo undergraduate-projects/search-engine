@@ -18,15 +18,21 @@ type SearchResponse = {
   data: SearchResponseItem[];
 };
 
-export enum QueryType {
-  Keyword,
-  File,
-}
+type Query =
+  | {
+      type: 'keyword';
+      keyword: string;
+    }
+  | {
+      type: 'file';
+      content: string;
+      filename: string;
+    };
 
 export const useSearchStore = defineStore('search', () => {
-  const query = ref({
-    type: QueryType.Keyword,
-    value: '',
+  const query = ref<Query>({
+    type: 'keyword',
+    keyword: '',
   });
 
   const resultEmpty = {

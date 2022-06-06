@@ -1,12 +1,7 @@
 <template>
   <form v-if="withButton" @submit="handleSubmit">
     <span class="p-input-icon-right mr-2">
-      <InputText
-        ref="inputtext"
-        type="text"
-        v-model="searchQuery"
-        class="searchbar"
-      />
+      <InputText type="text" v-model="searchQuery" class="searchbar" />
       <i
         class="pi pi-folder"
         v-tooltip.bottom="'上传案例文件'"
@@ -54,7 +49,7 @@ import Button from 'primevue/button';
 import OverlayPanel from 'primevue/overlaypanel';
 import FileUpload from 'primevue/fileupload';
 import type { FileUploadUploaderEvent } from 'primevue/fileupload';
-import { useSearchStore, QueryType } from '@/stores/search';
+import { useSearchStore } from '@/stores/search';
 import { ref } from 'vue';
 
 defineProps<{
@@ -63,7 +58,16 @@ defineProps<{
 
 const router = useRouter();
 const search = useSearchStore();
-const searchQuery = ref(search.query.value);
+const searchQuery = ref(
+  (() => {
+    switch (search.query.type) {
+      case 'keyword':
+        return search.query.keyword;
+      case 'file':
+        return search.query.filename;
+    }
+  })()
+);
 const fileUpload = ref();
 
 const emit = defineEmits<{
@@ -74,8 +78,8 @@ const handleSubmit = (e: Event) => {
   e.preventDefault();
   if (!searchQuery.value) return;
   search.query = {
-    type: QueryType.Keyword,
-    value: searchQuery.value,
+    type: 'keyword',
+    keyword: searchQuery.value,
   };
   search.resetResult();
   router.push({
@@ -84,10 +88,8 @@ const handleSubmit = (e: Event) => {
   emit('submit');
 };
 
-const inputtext = ref();
 const openFileUpload = (event: Event) => {
   let newEvent = Object.assign(event);
-  // newEvent.target = inputtext.value;
   fileUpload.value.toggle(newEvent);
 };
 
@@ -95,8 +97,9 @@ const fileUploader = (event: FileUploadUploaderEvent) => {
   let fileReader = new FileReader();
   fileReader.onload = () => {
     search.query = {
-      type: QueryType.File,
-      value: fileReader.result as string,
+      type: 'file',
+      content: fileReader.result as string,
+      filename: (event.files as File[])[0].name,
     };
     search.resetResult();
     router.push({

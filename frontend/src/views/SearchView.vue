@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, provide, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import Card from 'primevue/card';
 import Tree from 'primevue/tree';
@@ -17,6 +17,7 @@ import HeaderBar from '../components/HeaderBar.vue';
 import { api } from '@/router/axios';
 import { useSearchStore } from '@/stores/search';
 import type { AxiosRequestConfig } from 'axios';
+import { updateQueryKey } from '@/stores/injections';
 
 const toast = useToast();
 
@@ -64,8 +65,9 @@ const request = (offset?: number) => {
     });
 };
 onMounted(() => request());
-// onBeforeRouteUpdate(() => request(0));
-const onSubmit = () => request(0);
+provide(updateQueryKey, () => {
+  request(0);
+});
 const onPage = (event: PageState) => {
   console.log(event);
   request(event.page);
@@ -116,7 +118,7 @@ const selectedKeys = ref<TreeSelectionKeys>(
 <template>
   <div class="main flex flex-column">
     <Toast />
-    <HeaderBar @submit="onSubmit" />
+    <HeaderBar />
     <div class="flex">
       <Tree
         class="sidebar ml-4 mr-3 mt-3 flex-shrink-0"

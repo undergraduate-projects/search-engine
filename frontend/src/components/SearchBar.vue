@@ -17,7 +17,8 @@
       <InputText
         ref="inputtext"
         type="text"
-        v-model="searchQuery"
+        :model-value="search.searchBarDisplay"
+        @update:model-value="(newValue: string) => (searchQuery = newValue)"
         class="searchbar"
         placeholder="Search"
       />
@@ -50,7 +51,8 @@ import OverlayPanel from 'primevue/overlaypanel';
 import FileUpload from 'primevue/fileupload';
 import type { FileUploadUploaderEvent } from 'primevue/fileupload';
 import { useSearchStore } from '@/stores/search';
-import { ref } from 'vue';
+import { inject, ref } from 'vue';
+import { updateQueryKey } from '@/stores/injections';
 
 defineProps<{
   withButton: boolean;
@@ -58,21 +60,22 @@ defineProps<{
 
 const router = useRouter();
 const search = useSearchStore();
-const searchQuery = ref(
-  (() => {
-    switch (search.query.type) {
-      case 'keyword':
-        return search.query.keyword;
-      case 'file':
-        return search.query.filename;
-    }
-  })()
-);
+
+const searchQuery = ref(search.searchBarDisplay);
+
 const fileUpload = ref();
 
-const emit = defineEmits<{
-  (e: 'submit'): void;
-}>();
+const updateQueryNullable = inject(updateQueryKey);
+const updateQuery = updateQueryNullable as NonNullable<
+  typeof updateQueryNullable
+>;
+function query() {
+  search.resetResult();
+  router.push({
+    name: 'search',
+  });
+  updateQuery();
+}
 
 const handleSubmit = (e: Event) => {
   e.preventDefault();
@@ -81,11 +84,7 @@ const handleSubmit = (e: Event) => {
     type: 'keyword',
     keyword: searchQuery.value,
   };
-  search.resetResult();
-  router.push({
-    name: 'search',
-  });
-  emit('submit');
+  query();
 };
 
 const openFileUpload = (event: Event) => {
@@ -96,16 +95,13 @@ const openFileUpload = (event: Event) => {
 const fileUploader = (event: FileUploadUploaderEvent) => {
   let fileReader = new FileReader();
   fileReader.onload = () => {
+    fileUpload.value.hide();
     search.query = {
       type: 'file',
       content: fileReader.result as string,
       filename: (event.files as File[])[0].name,
     };
-    search.resetResult();
-    router.push({
-      name: 'search',
-    });
-    emit('submit');
+    query();
   };
   fileReader.readAsText((event.files as File[])[0]);
 };

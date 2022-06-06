@@ -65,16 +65,13 @@ const searchQuery = ref(search.searchBarDisplay);
 
 const fileUpload = ref();
 
-const updateQueryNullable = inject(updateQueryKey);
-const updateQuery = updateQueryNullable as NonNullable<
-  typeof updateQueryNullable
->;
+const updateQuery = inject(updateQueryKey);
 function query() {
   search.resetResult();
   router.push({
     name: 'search',
   });
-  updateQuery();
+  updateQuery?.();
 }
 
 const handleSubmit = (e: Event) => {

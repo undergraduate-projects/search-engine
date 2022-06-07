@@ -19,16 +19,24 @@ type SearchResponse = {
   data: SearchResponseItem[];
 };
 
-type Query =
-  | {
-      type: 'keyword';
-      keyword: string;
-    }
-  | {
-      type: 'file';
-      content: string;
-      filename: string;
-    };
+export type QueryKeyword = {
+  type: 'keyword';
+  keyword: string;
+  AJLB?: string[];
+  SPCX?: string[];
+  FGCY?: string[];
+  AH?: string;
+  AY?: string;
+  JBFY?: string;
+  WSZL?: string;
+};
+type QueryFile = {
+  type: 'file';
+  content: string;
+  filename: string;
+};
+
+type Query = QueryKeyword | QueryFile;
 
 export const useSearchStore = defineStore(
   'search',

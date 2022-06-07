@@ -6,12 +6,14 @@ import WaveLayout from '../components/WaveLayout.vue';
 <template>
   <WaveLayout>
     <div class="content flex align-items-center justify-content-center">
-      <div class="panel flex flex-column align-items-center">
-        <div class="logo flex align-items-center">
-          <img class="image" src="@/assets/justice.png" />
-          <div class="text">Case Lookup</div>
+      <div class="panel-outer">
+        <div class="panel flex flex-column align-items-center">
+          <div class="logo flex align-items-center">
+            <img class="image" src="@/assets/justice.png" />
+            <div class="text">Case Lookup</div>
+          </div>
+          <SearchBar :with-button="true" />
         </div>
-        <SearchBar :with-button="true" />
       </div>
     </div>
 
@@ -27,8 +29,11 @@ import WaveLayout from '../components/WaveLayout.vue';
 .content {
   min-height: 80vh;
 }
-.panel {
+.panel-outer {
   margin: auto;
+}
+.panel {
+  margin: 3rem;
   padding: 2rem;
   padding-bottom: 2.5rem;
   width: fit-content;
@@ -53,13 +58,18 @@ import WaveLayout from '../components/WaveLayout.vue';
 }
 
 :deep(.searchbar) {
-  width: 65vh;
+  width: 60vh;
+}
+
+:deep(.advanced) {
+  max-width: 50vw;
 }
 
 .foot {
   width: fit-content;
   margin: auto;
   margin-top: 1rem;
+  margin-bottom: 0.8rem;
   text-align: center;
   color: #aeb1b6;
 }

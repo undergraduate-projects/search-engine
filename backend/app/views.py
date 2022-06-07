@@ -33,21 +33,42 @@ def update_key(key_list, val, dic):
 
 def search_basic(request):
     if request.method != "POST":
-        return HttpResponse("Only POST method is supported.")
+        return HttpResponse("Only POST method is supported.", status=400)
     body = json.loads(request.body)
     filter_list = []
     if body.get("SPCX", None) is not None:
-        filter_list.append({"match": {"全文.文首.审判程序": body.get("SPCX", "")}})
+        SPCX = body.get("SPCX", [])
+        if isinstance(SPCX, list):
+            filter_list.append({"query_string": {
+                "fields": ["全文.文首.审判程序"], 
+                "query": " OR ".join(SPCX)
+            }})
     if body.get("AH", None) is not None:
         filter_list.append({"match": {"全文.文首.案号": body.get("AH", "")}})
     if body.get("AJLB", None) is not None:
-        filter_list.append({"match": {"案例属性.案件类别": body.get("AJLB", "")}})
+        AJLB = body.get("AJLB", [])
+        if isinstance(AJLB, list):
+            filter_list.append({"query_string": {
+                "fields": ["案例属性.案件类别"],
+                "query": " OR ".join(AJLB)
+            }})
     if body.get("AY", None) is not None:
-        filter_list.append({"match": {"案例属性.案由": body.get("AY", "")}})
+        filter_list.append({"match": {"案例属性.案由": {
+            "query": body.get("AY", ""),
+            "operator": "and"
+        }}})
     if body.get("JBFY", None) is not None:
-        filter_list.append({"match": {"案例属性.经办法院": body.get("JBFY", "")}})
+        filter_list.append({"match": {"案例属性.经办法院": {
+            "query": body.get("JBFY", ""),
+            "operator": "and"
+        }}})
     if body.get("FGCY", None) is not None:
-        filter_list.append({"match": {"案例属性.法官成员": body.get("FGCY", "")}})
+        FGCY = body.get("FGCY", [])
+        if isinstance(FGCY, list):
+            filter_list.append({"query_string": {
+                "fields": ["案例属性.法官成员"],
+                "query": " OR ".join(FGCY)
+            }})
     if body.get("WSZL", None) is not None:
         filter_list.append({"match": {"案例属性.文书种类": body.get("WSZL", "")}})
     resp = es.search(index=INDEX, 
@@ -101,7 +122,10 @@ def AY_search(AY):
                     size=20,
                     query={
                         "match": {
-                            "案例属性.案由": AY,
+                            "案例属性.案由": {
+                                "query": AY,
+                                "operator": "and"
+                            },
                     }},
                     highlight={
                         "fields": {
@@ -118,7 +142,10 @@ def JBFY_search(JBFY):
                     size=20,
                     query={
                         "match": {
-                            "案例属性.经办法院": JBFY,
+                            "案例属性.经办法院": {
+                                "query": JBFY,
+                                "operator": "and"
+                            },
                     }},
                     highlight={
                         "fields": {
@@ -135,9 +162,11 @@ def FGCY_serach(FGCY):
                     from_=0,
                     size=20,
                     query={
-                        "match": {
-                            "案例属性.法官成员": " ".join(FGCY),
-                    }},
+                        "query_string": {
+                            "fields": ["案例属性.法官成员"],
+                            "query": " OR ".join(FGCY)
+                        }
+                    },
                     highlight={
                         "fields": {
                             "案例属性.法官成员": {},
@@ -161,7 +190,7 @@ def knn_search(query_vector, k=20, num_candidates=100):
 
 def search_recommend(request):
     if request.method != "POST":
-        return HttpResponse("Only POST method is supported.")
+        return HttpResponse("Only POST method is supported.", status=400)
     body = json.loads(request.body)
     query_vector = body.get("query_vector", np.zeros(100))
     AY = body.get("AY", "")
@@ -186,7 +215,7 @@ def search_recommend(request):
 
 def search_by_case(request):
     if request.method != "POST":
-        return HttpResponse("Only POST method is supported.")
+        return HttpResponse("Only POST method is supported.", status=400)
     # print(request.body)
     body = json.loads(request.body)
     xml_str = body["xml_str"]
@@ -219,12 +248,12 @@ def search_by_case(request):
 
 def search_by_id(request):
     if request.method != "GET":
-        return HttpResponse("Only GET method is supported.")
+        return HttpResponse("Only GET method is supported.", status=400)
     try:
-        resp = es.get(index="case-data", id=request.GET.get("id", 0))
+        resp = es.get(index=INDEX, id=request.GET.get("id", 0))
         return JsonResponse(data={
                 'data': resp['_source']
             }, json_dumps_params={'ensure_ascii':False})
     except:
-        return HttpResponse("No such id.")
+        return HttpResponse("No such id.", status=400)
     

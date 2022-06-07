@@ -2,6 +2,7 @@
 import HeaderBar from '../components/HeaderBar.vue';
 import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
+import Chip from 'primevue/chip';
 import { useSearchStore } from '@/stores/search';
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 import { api } from '@/router/axios';
@@ -20,6 +21,7 @@ const recommendTypeMapping = {
   JBFY: '经办法院',
   FGCY: '法官成员',
   knn: '智能推荐',
+  FT: '法条',
 };
 const recommendation = ref({
   data: {
@@ -27,6 +29,7 @@ const recommendation = ref({
     JBFY: [],
     FGCY: [],
     knn: [],
+    FT: [],
   },
   offset: 0,
   size: 0,
@@ -39,6 +42,7 @@ function recommend() {
       AY: casea.value['案例属性']['案由'],
       JBFY: casea.value['案例属性']['经办法院'],
       FGCY: casea.value['案例属性']['法官成员'],
+      FT: casea.value['法条'],
     })
     .then(({ data }) => {
       recommendation.value = data;
@@ -93,6 +97,14 @@ onBeforeRouteUpdate(async (to) => {
           <div class="item" v-for="(value, key) in casea.全文.文首" :key="key">
             <b><span v-html="key" />： </b> <span v-html="value" />
           </div>
+        </div>
+        <div class="法条" v-if="'法条' in casea">
+          <h3>法条</h3>
+          <template v-for="(value, i) in casea.法条" :key="i">
+            <Chip>
+              <spam v-html="value" />
+            </Chip>
+          </template>
         </div>
         <template v-for="(value, key) in casea.全文" :key="key">
           <div v-if="(key as unknown as string) != '文首'">
@@ -164,6 +176,13 @@ onBeforeRouteUpdate(async (to) => {
   padding: 1rem;
   .item {
     padding: 0.1rem;
+  }
+}
+
+.法条 {
+  .p-chip {
+    margin: 0.2rem;
+    background: #efefef;
   }
 }
 

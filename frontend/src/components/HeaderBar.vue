@@ -1,5 +1,5 @@
 <template>
-  <div class="header m-2 flex align-items-center">
+  <div class="header m-2 flex">
     <RouterLink :to="{ name: 'home' }" class="logo flex align-items-center">
       <img class="image" src="@/assets/justice.png" />
       <div class="text">
@@ -7,7 +7,7 @@
         Lookup
       </div>
     </RouterLink>
-    <SearchBar :with-button="false" />
+    <SearchBar :with-button="false" class="search" />
   </div>
 </template>
 
@@ -30,6 +30,12 @@ import SearchBar from './SearchBar.vue';
   }
   margin-left: 1.1rem;
   margin-right: 3rem;
+  height: fit-content;
+}
+
+.search {
+  margin-top: 1.1rem;
+  flex-grow: 1;
 }
 
 a:link {

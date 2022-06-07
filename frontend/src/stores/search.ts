@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 type SearchResponseItem = {
   id: string;
@@ -18,27 +19,75 @@ type SearchResponse = {
   data: SearchResponseItem[];
 };
 
-export enum QueryType {
-  Keyword,
-  File,
-}
+export type QueryKeyword = {
+  type: 'keyword';
+  keyword: string;
+  AJLB?: string[];
+  SPCX?: string[];
+  FGCY?: string[];
+  AH?: string;
+  AY?: string;
+  JBFY?: string;
+  WSZL?: string;
+};
+type QueryFile = {
+  type: 'file';
+  content: string;
+  filename: string;
+};
 
-export const useSearchStore = defineStore('search', () => {
-  const query = ref({
-    type: QueryType.Keyword,
-    value: '',
-  });
+type Query = QueryKeyword | QueryFile;
 
-  const resultEmpty = {
-    total: 0,
-    size: 0,
-    offset: 0,
-    data: [],
-  };
-  const result = ref<SearchResponse>(resultEmpty);
-  const resetResult = () => {
-    result.value = resultEmpty;
-  };
+export const useSearchStore = defineStore(
+  'search',
+  () => {
+    const query = ref<Query>({
+      type: 'keyword',
+      keyword: '',
+    });
+    const resetQuery = () => {
+      query.value = {
+        type: 'keyword',
+        keyword: '',
+      };
+    };
 
-  return { query, resetResult, result };
-});
+    const result = ref<SearchResponse>({
+      total: 0,
+      size: 0,
+      offset: 0,
+      data: [],
+    });
+    const resetResult = () => {
+      result.value = {
+        total: 0,
+        size: 0,
+        offset: 0,
+        data: [],
+      };
+    };
+
+    // eslint-disable-next-line vue/return-in-computed-property
+    const searchBarDisplay = computed(() => {
+      switch (query.value.type) {
+        case 'keyword':
+          return query.value.keyword;
+        case 'file':
+          return query.value.filename;
+      }
+    });
+
+    return { query, resetQuery, result, resetResult, searchBarDisplay };
+  },
+  {
+    persist: {
+      afterRestore: (context) => {
+        const route = useRoute();
+        if (route.name == 'home') {
+          context.store.resetQuery();
+          context.store.resetResult();
+        }
+      },
+    },
+  }
+);

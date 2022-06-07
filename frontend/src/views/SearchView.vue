@@ -1,13 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { onBeforeRouteUpdate, RouterLink } from 'vue-router';
+import { onMounted, provide, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 import Card from 'primevue/card';
-import Tree from 'primevue/tree';
-import type {
-  TreeNode,
-  TreeExpandedKeys,
-  TreeSelectionKeys,
-} from 'primevue/tree';
 import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import Paginator from 'primevue/paginator';
@@ -15,8 +9,9 @@ import type { PageState } from 'primevue/paginator';
 import ProgressSpinner from 'primevue/progressspinner';
 import HeaderBar from '../components/HeaderBar.vue';
 import { api } from '@/router/axios';
-import { QueryType, useSearchStore } from '@/stores/search';
+import { useSearchStore } from '@/stores/search';
 import type { AxiosRequestConfig } from 'axios';
+import { updateQueryKey } from '@/stores/injections';
 
 const toast = useToast();
 
@@ -24,24 +19,47 @@ const loading = ref(false);
 const search = useSearchStore();
 const request = (offset?: number) => {
   loading.value = true;
-  const apiParams: AxiosRequestConfig =
-    search.query.type == QueryType.Keyword
-      ? {
+  const apiParams: AxiosRequestConfig = (() => {
+    switch (search.query.type) {
+      case 'keyword':
+        return {
           url: 'search',
-          method: 'get',
-          params: {
-            query: search.query.value,
+          method: 'post',
+          data: {
+            query: search.query.keyword,
             offset: offset != undefined ? offset : search.result.offset,
+            AJLB:
+              search.query.AJLB && search.query.AJLB.length > 0
+                ? search.query.AJLB
+                : undefined,
+            SPCX:
+              search.query.SPCX && search.query.SPCX.length > 0
+                ? search.query.SPCX
+                : undefined,
+            FGCY:
+              search.query.FGCY && search.query.FGCY.length > 0
+                ? search.query.FGCY
+                : undefined,
+            AH: search.query.AH ? search.query.AH : undefined,
+            AY: search.query.AY ? search.query.AY : undefined,
+            JBFY: search.query.JBFY ? search.query.JBFY : undefined,
+            WSZL:
+              search.query.WSZL && search.query.WSZL.length > 0
+                ? search.query.WSZL
+                : undefined,
           },
-        }
-      : {
+        };
+      case 'file':
+        return {
           url: 'search-by-case',
           method: 'post',
           data: {
-            xml_str: search.query.value,
+            xml_str: search.query.content,
             offset: offset != undefined ? offset : search.result.offset,
           },
         };
+    }
+  })();
   api(apiParams)
     .then(({ data }) => {
       search.result = data;
@@ -60,73 +78,34 @@ const request = (offset?: number) => {
     });
 };
 onMounted(() => request());
-// onBeforeRouteUpdate(() => request(0));
-const onSubmit = () => request(0);
+provide(updateQueryKey, () => {
+  request(0);
+});
 const onPage = (event: PageState) => {
   console.log(event);
   request(event.page);
   window.scrollTo(0, 0);
 };
-
-const items = ref<TreeNode[]>([
-  {
-    key: '0',
-    label: '审理法院',
-    icon: 'pi pi-fw pi-building',
-    children: [
-      {
-        key: '0-0',
-        label: '最高人民法院',
-      },
-      {
-        key: '0-1',
-        label: '北京市高级人民法院',
-        children: [
-          { key: '0-1-0', label: '北京市第一中级人民法院' },
-          { key: '0-1-1', label: '北京市第二中级人民法院' },
-        ],
-      },
-    ],
-  },
-]);
-
-function allKeys(items: TreeNode[]) {
-  return items.reduce<TreeExpandedKeys>((keys, item) => {
-    keys[item.key as string] = true;
-    if (item.children) {
-      Object.assign(keys, allKeys(item.children));
-    }
-    return keys;
-  }, {});
-}
-const expandedKeys: TreeExpandedKeys = allKeys(items.value);
-
-const selectedKeys = ref<TreeSelectionKeys>(
-  Object.keys(expandedKeys).reduce<TreeSelectionKeys>((keys, key) => {
-    keys[key] = { checked: true, partialChecked: false };
-    return keys;
-  }, {})
-);
 </script>
 
 <template>
   <div class="main flex flex-column">
     <Toast />
-    <HeaderBar @submit="onSubmit" />
-    <div class="flex">
-      <Tree
-        class="sidebar ml-4 mr-3 mt-3 flex-shrink-0"
-        :value="items"
-        selectionMode="checkbox"
-        :expandedKeys="expandedKeys"
-        v-model:selectionKeys="selectedKeys"
-      />
-      <ProgressSpinner v-if="loading" />
-      <div v-else class="flex flex-column">
+    <HeaderBar />
+
+    <ProgressSpinner v-if="loading" />
+    <template v-else>
+      <template v-if="search.result.data.length == 0">
+        <div class="notfound">
+          <img src="@/assets/question.png" class="mt-3" />
+          <h3 class="mt-3">没有搜索到相关结果</h3>
+        </div>
+      </template>
+      <div v-else class="results">
         <template v-for="item in search.result.data" :key="item.id">
           <RouterLink
             :to="{ name: 'case', params: { id: item.id } }"
-            class="m-3"
+            class="m-3 result-link"
           >
             <Card class="result">
               <template #title>
@@ -156,12 +135,26 @@ const selectedKeys = ref<TreeSelectionKeys>(
                   </div>
                   <div class="property">
                     <template
-                      v-for="field in ['案件类别', '案由']"
+                      v-for="field in [
+                        '案件类别',
+                        '审判程序',
+                        '法官成员',
+                        '案号',
+                        '案由',
+                        '经办法院',
+                        '文书种类',
+                      ]"
                       :key="field"
                     >
                       <div v-if="field in item.source['案例属性']">
                         <b>{{ field }}：</b
                         ><span v-html="item.source['案例属性'][field]"></span>
+                      </div>
+                      <div v-else-if="field in item.source['全文']['文首']">
+                        <b>{{ field }}：</b
+                        ><span
+                          v-html="item.source['全文']['文首'][field]"
+                        ></span>
                       </div>
                     </template>
                   </div>
@@ -177,7 +170,7 @@ const selectedKeys = ref<TreeSelectionKeys>(
           :first="search.result.offset * 10"
         ></Paginator>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -195,50 +188,6 @@ a:link {
   width: 65vh;
 }
 
-.sidebar {
-  padding: 1rem;
-  padding-left: 0.5rem;
-  height: fit-content;
-  max-width: 300px;
-  border: none;
-  border-radius: 10px;
-  background: #f7f7f7;
-  box-shadow: inset 5px 5px 8px #e8e8e8, inset -5px -5px 8px #ffffff;
-  :deep(.p-checkbox) {
-    height: 17px;
-    width: 17px;
-  }
-  :deep(.p-checkbox-box) {
-    height: 17px;
-    width: 17px;
-  }
-  :deep(.p-checkbox-icon) {
-    font-size: 9px !important;
-  }
-  :deep(.p-tree-toggler-icon) {
-    font-size: 0.9rem !important;
-  }
-  :deep(.p-tree-toggler) {
-    height: 1.7rem !important;
-    width: 1.7rem !important;
-  }
-  :deep(.p-tree-container .p-treenode .p-treenode-content.p-highlight) {
-    background: none !important;
-    color: var(--text-color) !important;
-  }
-  :deep(.p-treenode-label) {
-    font-size: 0.9rem;
-    display: block;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  :deep(.p-treenode-label):hover {
-    overflow: visible;
-    white-space: normal;
-  }
-}
-
 .p-progress-spinner {
   margin: 7rem auto;
   width: 5rem;
@@ -250,7 +199,7 @@ a:link {
 }
 
 .result {
-  max-width: 900px;
+  width: 900px;
   border-radius: 10px;
   background: #f7f7f7;
   box-shadow: 5px 5px 10px #ebebeb, -5px -5px 10px #ffffff;
@@ -278,11 +227,35 @@ a:link {
   }
   .property {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    column-gap: 1rem;
+    row-gap: 0.5rem;
     padding-top: 0.5rem;
   }
 }
 
+.results {
+  margin-left: 4rem;
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+
+  .result-link {
+    width: fit-content;
+  }
+}
+
+.notfound {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  img {
+    width: 9rem;
+    height: 9rem;
+  }
+  color: var(--text-color);
+}
 .p-paginator {
   background: none;
   margin-bottom: 1rem;

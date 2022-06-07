@@ -32,12 +32,28 @@ def update_key(key_list, val, dic):
 
 
 def search_basic(request):
-    if request.method != "GET":
-        return HttpResponse("Only GET method is supported.")
+    if request.method != "POST":
+        return HttpResponse("Only POST method is supported.")
+    body = json.loads(request.body)
+    filter_list = []
+    if body.get("SPCX", None) is not None:
+        filter_list.append({"match": {"全文.文首.审判程序": body.get("SPCX", "")}})
+    if body.get("AH", None) is not None:
+        filter_list.append({"match": {"全文.文首.案号": body.get("AH", "")}})
+    if body.get("AJLB", None) is not None:
+        filter_list.append({"match": {"案例属性.案件类别": body.get("AJLB", "")}})
+    if body.get("AY", None) is not None:
+        filter_list.append({"match": {"案例属性.案由": body.get("AY", "")}})
+    if body.get("JBFY", None) is not None:
+        filter_list.append({"match": {"案例属性.经办法院": body.get("JBFY", "")}})
+    if body.get("FGCY", None) is not None:
+        filter_list.append({"match": {"案例属性.法官成员": body.get("FGCY", "")}})
+    if body.get("WSZL", None) is not None:
+        filter_list.append({"match": {"案例属性.文书种类": body.get("WSZL", "")}})
     resp = es.search(index=INDEX, 
                     query={
                         "query_string": {
-                            "query": request.GET.get("query", "no"),
+                            "query": body.get("query", "no"),
                     }},
                     fields=["自定义*", "全文*", "法条", "案例属性*"],
                     highlight={
@@ -48,7 +64,9 @@ def search_basic(request):
                             "案例属性*": {},
                         }
                     },
-                    from_=request.GET.get("offset", 0))
+                    from_=body.get("offset", 0),
+                    post_filter={"bool": {"must": filter_list}})
+                    
     data = []
     for hit in resp['hits']['hits']:
         source = hit['_source']
@@ -65,14 +83,14 @@ def search_basic(request):
         data.append({
             'id': hit['_id'],
             'source': source,
-            'highlight': highlight
+            'highlight': list(unique_highlight.values()),
         })
     print(len(data))
     # res = [case['_source'] for case in case_list]
     return JsonResponse(data={
         'total': resp['hits']['total']['value'],
         'size': 10,
-        'offset': request.GET.get("offset", 0),
+        'offset': body.get("offset", 0),
         'data': data
     }, json_dumps_params={'ensure_ascii':False})
     
@@ -142,12 +160,13 @@ def knn_search(query_vector, k=20, num_candidates=100):
 
 
 def search_recommend(request):
-    if request.method != "GET":
-        return HttpResponse("Only GET method is supported.")
-    query_vector = request.GET.get("query_vector", np.zeros(100))
-    AY = request.GET.get("AY", "")
-    JBFY = request.GET.get("JBFY", "")
-    FGCY = request.GET.get("FGCY", [])
+    if request.method != "POST":
+        return HttpResponse("Only POST method is supported.")
+    body = json.loads(request.body)
+    query_vector = body.get("query_vector", np.zeros(100))
+    AY = body.get("AY", "")
+    JBFY = body.get("JBFY", "")
+    FGCY = body.get("FGCY", [])
     knn_data = knn_search(query_vector)
     AY_data = AY_search(AY)
     JBFY_data = JBFY_search(JBFY)

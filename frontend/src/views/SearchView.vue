@@ -139,12 +139,26 @@ const onPage = (event: PageState) => {
                   </div>
                   <div class="property">
                     <template
-                      v-for="field in ['案件类别', '案由']"
+                      v-for="field in [
+                        '案件类别',
+                        '审判程序',
+                        '法官成员',
+                        '案号',
+                        '案由',
+                        '经办法院',
+                        '文书种类',
+                      ]"
                       :key="field"
                     >
                       <div v-if="field in item.source['案例属性']">
                         <b>{{ field }}：</b
                         ><span v-html="item.source['案例属性'][field]"></span>
+                      </div>
+                      <div v-else-if="field in item.source['全文']['文首']">
+                        <b>{{ field }}：</b
+                        ><span
+                          v-html="item.source['全文']['文首'][field]"
+                        ></span>
                       </div>
                     </template>
                   </div>
@@ -261,7 +275,9 @@ a:link {
   }
   .property {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    column-gap: 1rem;
+    row-gap: 0.5rem;
     padding-top: 0.5rem;
   }
 }

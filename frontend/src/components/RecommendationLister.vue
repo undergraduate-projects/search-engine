@@ -2,9 +2,14 @@
   <div class="header">
     <div class="title">{{ title }}</div>
     <Button
-      icon="pi pi-refresh"
+      icon="pi pi-chevron-left"
+      class="p-button-rounded p-button-text refresh prev"
+      @click="prev"
+    />
+    <Button
+      icon="pi pi-chevron-right"
       class="p-button-rounded p-button-text refresh"
-      @click="refresh"
+      @click="next"
     />
   </div>
 
@@ -34,8 +39,15 @@ const props = defineProps<{
 const page = ref(0);
 const pageSize = 5;
 
-function refresh() {
-  page.value = (page.value + 1) % Math.ceil(props.data.length / pageSize);
+const pageNum = Math.ceil(props.data.length / pageSize);
+
+function next() {
+  if (page.value + 1 >= pageNum) return;
+  page.value++;
+}
+function prev() {
+  if (page.value <= 0) return;
+  page.value--;
 }
 </script>
 
@@ -48,9 +60,11 @@ function refresh() {
     font-weight: 700;
   }
   .refresh {
-    margin-left: auto;
     height: 2.2rem !important;
     width: 2.2rem !important;
+  }
+  .prev {
+    margin-left: auto;
   }
 }
 a:link {

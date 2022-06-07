@@ -38,11 +38,12 @@ const recommendation = ref({
 function recommend() {
   api
     .post('recommend', {
-      query_vector: casea.value['vec'],
-      AY: casea.value['案例属性']['案由'],
-      JBFY: casea.value['案例属性']['经办法院'],
-      FGCY: casea.value['案例属性']['法官成员'],
-      FT: casea.value['法条'],
+      // query_vector: casea.value['vec'],
+      // AY: casea.value['案例属性']['案由'],
+      // JBFY: casea.value['案例属性']['经办法院'],
+      // FGCY: casea.value['案例属性']['法官成员'],
+      // FT: casea.value['法条'],
+      id: route.params.id,
     })
     .then(({ data }) => {
       recommendation.value = data;
@@ -97,8 +98,13 @@ onBeforeRouteUpdate(async (to) => {
           <div class="item" v-for="(value, key) in casea.全文.文首" :key="key">
             <b><span v-html="key" />： </b> <span v-html="value" />
           </div>
+          <template v-if="casea['案例属性']['案由']">
+            <div class="item">
+              <b>案由： </b> <span v-html="casea['案例属性']['案由']" />
+            </div>
+          </template>
         </div>
-        <div class="法条" v-if="'法条' in casea">
+        <div class="法条" v-if="casea['法条'] && casea['法条'].length">
           <h3>法条</h3>
           <template v-for="(value, i) in casea.法条" :key="i">
             <Chip>
@@ -106,6 +112,24 @@ onBeforeRouteUpdate(async (to) => {
             </Chip>
           </template>
         </div>
+        <div
+          class="法官成员"
+          v-if="
+            casea['案例属性']['法官成员'] &&
+            casea['案例属性']['法官成员'].length
+          "
+        >
+          <h3>法官成员</h3>
+          <template
+            v-for="(value, i) in casea['案例属性']['法官成员']"
+            :key="i"
+          >
+            <Chip>
+              <spam v-html="value" />
+            </Chip>
+          </template>
+        </div>
+
         <template v-for="(value, key) in casea.全文" :key="key">
           <div v-if="(key as unknown as string) != '文首'">
             <h3><span v-html="key" /></h3>
@@ -119,6 +143,7 @@ onBeforeRouteUpdate(async (to) => {
             undefined
           "
         >
+          <h2>附加段</h2>
           <template v-for="(value, key) in casea" :key="key">
             <div v-if="(key as unknown as string).startsWith('自定义')">
               <h3>
@@ -135,7 +160,9 @@ onBeforeRouteUpdate(async (to) => {
         <div class="recommend">
           <h3>推荐案例</h3>
           <template v-for="(v, k) in recommendation.data" :key="k">
-            <RecommendationLister :title="recommendTypeMapping[k]" :data="v" />
+            <template v-if="v.length">
+              <RecommendationLister :title="recommendTypeMapping[k]" :data="v"
+            /></template>
           </template>
         </div>
       </div>
@@ -179,11 +206,9 @@ onBeforeRouteUpdate(async (to) => {
   }
 }
 
-.法条 {
-  .p-chip {
-    margin: 0.2rem;
-    background: #efefef;
-  }
+.p-chip {
+  margin: 0.2rem;
+  background: #efefef;
 }
 
 .additional {

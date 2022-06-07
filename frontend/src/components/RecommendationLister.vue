@@ -49,8 +49,8 @@ function refresh() {
   }
   .refresh {
     margin-left: auto;
-    height: 2.2rem;
-    width: 2.2rem;
+    height: 2.2rem !important;
+    width: 2.2rem !important;
   }
 }
 a:link {

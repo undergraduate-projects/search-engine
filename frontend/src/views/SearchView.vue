@@ -30,8 +30,8 @@ const request = (offset?: number) => {
       case 'keyword':
         return {
           url: 'search',
-          method: 'get',
-          params: {
+          method: 'post',
+          data: {
             query: search.query.keyword,
             offset: offset != undefined ? offset : search.result.offset,
           },
@@ -77,20 +77,32 @@ const onPage = (event: PageState) => {
 const items = ref<TreeNode[]>([
   {
     key: '0',
-    label: '审理法院',
-    icon: 'pi pi-fw pi-building',
+    label: '案件类别',
+    icon: 'pi pi-fw pi-list',
     children: [
       {
         key: '0-0',
-        label: '最高人民法院',
+        label: '行政案件',
       },
       {
         key: '0-1',
-        label: '北京市高级人民法院',
-        children: [
-          { key: '0-1-0', label: '北京市第一中级人民法院' },
-          { key: '0-1-1', label: '北京市第二中级人民法院' },
-        ],
+        label: '刑罚变更案件',
+      },
+      {
+        key: '0-2',
+        label: '民事案件',
+      },
+      {
+        key: '0-3',
+        label: '执行案件',
+      },
+      {
+        key: '0-4',
+        label: '刑事案件',
+      },
+      {
+        key: '0-5',
+        label: '赔偿案件',
       },
     ],
   },

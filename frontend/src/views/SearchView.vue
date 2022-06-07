@@ -97,11 +97,7 @@ const onPage = (event: PageState) => {
     <template v-else>
       <template v-if="search.result.data.length == 0">
         <div class="notfound">
-          <img
-            src="https://img.icons8.com/nolan/64/search.png"
-            alt="search"
-            class="mt-3"
-          />
+          <img src="@/assets/question.png" class="mt-3" />
           <h3 class="mt-3">没有搜索到相关结果</h3>
         </div>
       </template>
@@ -192,50 +188,6 @@ a:link {
   width: 65vh;
 }
 
-.sidebar {
-  padding: 1rem;
-  padding-left: 0.5rem;
-  height: fit-content;
-  max-width: 300px;
-  border: none;
-  border-radius: 10px;
-  background: #f7f7f7;
-  box-shadow: inset 5px 5px 8px #e8e8e8, inset -5px -5px 8px #ffffff;
-  :deep(.p-checkbox) {
-    height: 17px;
-    width: 17px;
-  }
-  :deep(.p-checkbox-box) {
-    height: 17px;
-    width: 17px;
-  }
-  :deep(.p-checkbox-icon) {
-    font-size: 9px !important;
-  }
-  :deep(.p-tree-toggler-icon) {
-    font-size: 0.9rem !important;
-  }
-  :deep(.p-tree-toggler) {
-    height: 1.7rem !important;
-    width: 1.7rem !important;
-  }
-  :deep(.p-tree-container .p-treenode .p-treenode-content.p-highlight) {
-    background: none !important;
-    color: var(--text-color) !important;
-  }
-  :deep(.p-treenode-label) {
-    font-size: 0.9rem;
-    display: block;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  :deep(.p-treenode-label):hover {
-    overflow: visible;
-    white-space: normal;
-  }
-}
-
 .p-progress-spinner {
   margin: 7rem auto;
   width: 5rem;
@@ -247,7 +199,7 @@ a:link {
 }
 
 .result {
-  max-width: 900px;
+  width: 900px;
   border-radius: 10px;
   background: #f7f7f7;
   box-shadow: 5px 5px 10px #ebebeb, -5px -5px 10px #ffffff;
@@ -298,6 +250,11 @@ a:link {
   display: flex;
   flex-direction: column;
   align-items: center;
+  img {
+    width: 9rem;
+    height: 9rem;
+  }
+  color: var(--text-color);
 }
 .p-paginator {
   background: none;

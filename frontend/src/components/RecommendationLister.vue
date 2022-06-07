@@ -73,10 +73,8 @@ a:link {
 }
 .item {
   margin: 0.5rem 0;
-  a {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>

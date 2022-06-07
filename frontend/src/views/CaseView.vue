@@ -200,7 +200,10 @@ onBeforeRouteUpdate(async (to) => {
   grid-template-columns: 1fr 1fr;
   background-color: #fafafa;
   border-radius: 10px;
-  padding: 1rem;
+  border-color: var(--primary-color);
+  border-width: 0 0 0 4px;
+  border-style: solid;
+  padding: 1rem 0.5rem 1rem 1.5rem;
   .item {
     padding: 0.1rem;
   }
@@ -216,11 +219,14 @@ onBeforeRouteUpdate(async (to) => {
   margin-top: 2rem;
   border-radius: 10px;
   background-color: #fafafa;
-  border-color: #71aaff;
-  border-width: 0 0 0 5px;
-  border-style: solid;
+  // border-color: #71aaff;
+  // border-width: 0 0 0 5px;
+  // border-style: solid;
 }
 
+.sidebar {
+  min-width: 0;
+}
 .recommend {
   padding: 1rem;
   margin: 2rem 1rem 1rem 0rem;

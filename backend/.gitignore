@@ -137,4 +137,4 @@ GitHub.sublime-settings
 .history
 
 # Pretrained vectors
-data/
+data/*.txt

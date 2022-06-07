@@ -245,11 +245,15 @@ def search_recommend(request):
     if request.method != "POST":
         return HttpResponse("Only POST method is supported.", status=400)
     body = json.loads(request.body)
-    query_vector = body.get("query_vector", np.zeros(100))
-    AY = body.get("AY", "")
-    JBFY = body.get("JBFY", "")
-    FGCY = body.get("FGCY", [])
-    FT = body.get("FT", [])
+    try:
+        resp = es.get(index=INDEX, id=body.get("id", 0))
+        query_vector = resp['_source']['vec']
+        AY = resp['_source']['案例属性']['案由']
+        JBFY = resp['_source']['案例属性']['经办法院']
+        FGCY = list(set(resp['_source']['案例属性']['法官成员']))
+        FT = resp['_source']['法条']
+    except:
+        pass
     try:
         knn_data = knn_search(query_vector)
     except:
@@ -322,7 +326,7 @@ def search_by_id(request):
         return HttpResponse("Only GET method is supported.", status=400)
     try:
         resp = es.get(index=INDEX, id=request.GET.get("id", 0))
-        deduplicate_FGCY(resp)
+        resp['_source']['案例属性']['法官成员'] = list(set(resp['_source']['案例属性']['法官成员']))
         return JsonResponse(data={
                 'data': resp['_source']
             }, json_dumps_params={'ensure_ascii':False})

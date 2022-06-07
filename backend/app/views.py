@@ -31,6 +31,14 @@ def update_key(key_list, val, dic):
         print(f"exception at dic: {dic}")
 
 
+def deduplicate_FGCY(resp):
+    try:
+        for idx in range(len(resp['hits']['hits'])):
+            resp['hits']['hits'][idx]['_source']['案例属性']['法官成员'] = list(set(resp['hits']['hits'][idx]['_source']['案例属性']['法官成员']))
+    except:
+        pass
+
+
 def search_basic(request):
     if request.method != "POST":
         return HttpResponse("Only POST method is supported.", status=400)
@@ -41,7 +49,8 @@ def search_basic(request):
         if isinstance(SPCX, list):
             filter_list.append({"query_string": {
                 "fields": ["全文.文首.审判程序"], 
-                "query": " OR ".join(SPCX)
+                "query": " OR ".join(SPCX),
+                "default_operator": "AND"
             }})
     if body.get("AH", None) is not None:
         filter_list.append({"match": {"全文.文首.案号": body.get("AH", "")}})
@@ -50,7 +59,8 @@ def search_basic(request):
         if isinstance(AJLB, list):
             filter_list.append({"query_string": {
                 "fields": ["案例属性.案件类别"],
-                "query": " OR ".join(AJLB)
+                "query": " OR ".join(AJLB),
+                "default_operator": "AND"
             }})
     if body.get("AY", None) is not None:
         filter_list.append({"match": {"案例属性.案由": {
@@ -67,26 +77,42 @@ def search_basic(request):
         if isinstance(FGCY, list):
             filter_list.append({"query_string": {
                 "fields": ["案例属性.法官成员"],
-                "query": " OR ".join(FGCY)
+                "query": " OR ".join(FGCY),
+                "default_operator": "AND"
             }})
     if body.get("WSZL", None) is not None:
-        filter_list.append({"match": {"案例属性.文书种类": body.get("WSZL", "")}})
-    resp = es.search(index=INDEX, 
-                    query={
-                        "query_string": {
-                            "query": body.get("query", "no"),
-                    }},
-                    fields=["自定义*", "全文*", "法条", "案例属性*"],
-                    highlight={
-                        "fields": {
-                            "自定义*": {},
-                            "全文*": {},
-                            "法条": {},
-                            "案例属性*": {},
-                        }
-                    },
-                    from_=body.get("offset", 0),
-                    post_filter={"bool": {"must": filter_list}})
+        WSZL = body.get("WSZL", [])
+        if isinstance(WSZL, list):
+            filter_list.append({"query_string": {
+                "fields": ["案例属性.文书种类"],
+                "query": " OR ".join(WSZL),
+                "default_operator": "AND"
+            }})
+    try:
+        resp = es.search(index=INDEX, 
+                        query={
+                            "query_string": {
+                                "query": body.get("query", "no"),
+                        }},
+                        fields=["自定义*", "全文*", "法条", "案例属性*"],
+                        highlight={
+                            "fields": {
+                                "自定义*": {},
+                                "全文*": {},
+                                "法条": {},
+                                "案例属性*": {},
+                            }
+                        },
+                        from_=body.get("offset", 0),
+                        post_filter={"bool": {"must": filter_list}})
+        deduplicate_FGCY(resp)
+    except:
+        return JsonResponse(data={
+            'total': 0,
+            'size': 10,
+            'offset': body.get("offset", 0),
+            'data': []
+        }, json_dumps_params={'ensure_ascii':False})
                     
     data = []
     for hit in resp['hits']['hits']:
@@ -133,6 +159,7 @@ def AY_search(AY):
                         }
                     }
             )
+    deduplicate_FGCY(resp)
     return resp['hits']['hits']
 
 
@@ -153,6 +180,7 @@ def JBFY_search(JBFY):
                         }
                     }
             )
+    deduplicate_FGCY(resp)
     return resp['hits']['hits']
 
 
@@ -164,7 +192,8 @@ def FGCY_serach(FGCY):
                     query={
                         "query_string": {
                             "fields": ["案例属性.法官成员"],
-                            "query": " OR ".join(FGCY)
+                            "query": " OR ".join(FGCY),
+                            "default_operator": "AND"
                         }
                     },
                     highlight={
@@ -173,6 +202,29 @@ def FGCY_serach(FGCY):
                         }
                     }
             )
+    deduplicate_FGCY(resp)
+    return resp['hits']['hits']
+
+
+def FT_search(FT):
+    assert isinstance(FT, list)
+    resp = es.search(index=INDEX,
+                    from_=0,
+                    size=20,
+                    query={
+                        "query_string": {
+                            "fields": ["法条"],
+                            "query": " OR ".join(FT),
+                            "default_operator": "AND"
+                        }
+                    },
+                    highlight={
+                        "fields": {
+                            "法条": {},
+                        }
+                    }
+            )
+    deduplicate_FGCY(resp)
     return resp['hits']['hits']
 
 
@@ -185,6 +237,7 @@ def knn_search(query_vector, k=20, num_candidates=100):
                     "num_candidates": num_candidates
                 }
             )
+    deduplicate_FGCY(resp)
     return resp['hits']['hits']
 
 
@@ -196,19 +249,37 @@ def search_recommend(request):
     AY = body.get("AY", "")
     JBFY = body.get("JBFY", "")
     FGCY = body.get("FGCY", [])
-    knn_data = knn_search(query_vector)
-    AY_data = AY_search(AY)
-    JBFY_data = JBFY_search(JBFY)
-    FGCY_data = FGCY_serach(FGCY)
+    FT = body.get("FT", [])
+    try:
+        knn_data = knn_search(query_vector)
+    except:
+        knn_data = []
+    try:
+        AY_data = AY_search(AY)
+    except:
+        AY_data = []
+    try:
+        JBFY_data = JBFY_search(JBFY)
+    except:
+        JBFY_data = []
+    try:
+        FGCY_data = FGCY_serach(FGCY)
+    except:
+        FGCY_data = []
+    try:
+        FT_data = FT_search(FT)
+    except:
+        FT_data = []
     return JsonResponse(data={
-        'total': len(knn_data) + len(AY_data) + len(JBFY_data) + len(FGCY_data),
+        'total': len(knn_data) + len(AY_data) + len(JBFY_data) + len(FGCY_data) + len(FT_data),
         'size': 10,
         'offset': 0,
         'data': {
             'knn': knn_data,
             'AY': AY_data,
             'JBFY': JBFY_data,
-            'FGCY': FGCY_data
+            'FGCY': FGCY_data,
+            'FT': FT_data
         }
     }, json_dumps_params={'ensure_ascii':False})
 
@@ -251,6 +322,7 @@ def search_by_id(request):
         return HttpResponse("Only GET method is supported.", status=400)
     try:
         resp = es.get(index=INDEX, id=request.GET.get("id", 0))
+        deduplicate_FGCY(resp)
         return JsonResponse(data={
                 'data': resp['_source']
             }, json_dumps_params={'ensure_ascii':False})
